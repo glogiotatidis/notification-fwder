@@ -129,6 +129,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.48.1")
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("com.google.truth:truth:1.1.5")
     kspAndroidTest("com.google.dagger:hilt-compiler:2.48.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
