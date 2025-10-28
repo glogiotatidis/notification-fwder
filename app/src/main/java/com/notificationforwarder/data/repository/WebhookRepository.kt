@@ -48,7 +48,7 @@ class WebhookRepository @Inject constructor(
     suspend fun updateTriggerRule(rule: TriggerRule) = triggerRuleDao.update(rule)
 
     suspend fun deleteTriggerRule(rule: TriggerRule) = triggerRuleDao.delete(rule)
-    
+
     suspend fun deleteTriggerRuleById(ruleId: Long) {
         // Delete by creating a temporary object with the ID
         val rule = TriggerRule(id = ruleId, webhookId = 0)

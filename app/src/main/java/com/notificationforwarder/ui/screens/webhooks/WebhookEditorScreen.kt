@@ -151,7 +151,7 @@ fun WebhookEditorScreen(
             // Trigger Rules Section
             TriggerRulesListSection(
                 triggerRules = triggerRules,
-                onAddRule = { 
+                onAddRule = {
                     viewModel.addTriggerRule()
                     showRuleDialog = true
                 },
