@@ -15,6 +15,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 class DatabaseIntegrationTest {
@@ -132,7 +133,7 @@ class DatabaseIntegrationTest {
     }
 
     @Test
-    fun notificationLogPruning() = runTest(timeout = 30_000) {
+    fun notificationLogPruning() = runTest(timeout = 30.seconds) {
         // Insert 1010 logs (reduced test for faster execution)
         val baseTime = System.currentTimeMillis()
         repeat(1010) { index ->
