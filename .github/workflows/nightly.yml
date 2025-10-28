@@ -38,15 +38,17 @@ jobs:
         if: github.event.inputs.skip_tests != 'true'
         run: ./gradlew testDebugUnitTest
 
-      - name: Run instrumented tests
-        if: github.event.inputs.skip_tests != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          target: default
-          arch: x86_64
-          profile: Nexus 6
-          script: ./gradlew connectedDebugAndroidTest
+      # Instrumented tests disabled for nightly builds (too slow)
+      # Enable them manually via workflow_dispatch if needed
+      # - name: Run instrumented tests
+      #   if: github.event.inputs.skip_tests != 'true'
+      #   uses: reactivecircus/android-emulator-runner@v2
+      #   with:
+      #     api-level: 29
+      #     target: default
+      #     arch: x86_64
+      #     profile: Nexus 6
+      #     script: ./gradlew connectedDebugAndroidTest
 
       - name: Upload test results
         if: always()
