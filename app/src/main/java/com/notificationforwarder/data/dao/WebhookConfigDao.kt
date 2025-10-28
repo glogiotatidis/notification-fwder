@@ -3,6 +3,7 @@ package com.notificationforwarder.data.dao
 import androidx.room.*
 import com.notificationforwarder.data.entity.TriggerRule
 import com.notificationforwarder.data.entity.WebhookConfig
+import com.notificationforwarder.data.model.WebhookWithRules
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,6 +16,14 @@ interface WebhookConfigDao {
 
     @Query("SELECT * FROM webhook_configs WHERE id = :id")
     suspend fun getById(id: Long): WebhookConfig?
+
+    @Transaction
+    @Query("SELECT * FROM webhook_configs WHERE id = :id")
+    suspend fun getWebhookWithRules(id: Long): WebhookWithRules?
+
+    @Transaction
+    @Query("SELECT * FROM webhook_configs ORDER BY createdAt DESC")
+    fun getAllWithRulesFlow(): Flow<List<WebhookWithRules>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(webhook: WebhookConfig): Long

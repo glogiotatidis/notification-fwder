@@ -32,11 +32,14 @@ fun WebhookEditorScreen(
 ) {
     val url by viewModel.url.collectAsStateWithLifecycle()
     val headers by viewModel.headers.collectAsStateWithLifecycle()
-    val triggerRule by viewModel.triggerRule.collectAsStateWithLifecycle()
+    val triggerRules by viewModel.triggerRules.collectAsStateWithLifecycle()
+    val currentRule by viewModel.currentRule.collectAsStateWithLifecycle()
     val activeNotifications by viewModel.activeNotifications.collectAsStateWithLifecycle()
     val matchingNotifications by viewModel.matchingNotifications.collectAsStateWithLifecycle()
 
     var showHeaderDialog by remember { mutableStateOf(false) }
+    var showRuleDialog by remember { mutableStateOf(false) }
+    var ruleToDelete by remember { mutableStateOf<TriggerRule?>(null) }
     var urlError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -146,9 +149,18 @@ fun WebhookEditorScreen(
             }
 
             // Trigger Rules Section
-            TriggerRulesSection(
-                triggerRule = triggerRule,
-                onTriggerRuleChange = { viewModel.updateTriggerRule(it) }
+            TriggerRulesListSection(
+                triggerRules = triggerRules,
+                onAddRule = { 
+                    viewModel.addTriggerRule()
+                    showRuleDialog = true
+                },
+                onEditRule = { rule ->
+                    viewModel.updateCurrentRule(rule)
+                    showRuleDialog = true
+                },
+                onToggleRule = { viewModel.toggleTriggerRule(it) },
+                onDeleteRule = { ruleToDelete = it }
             )
 
             // Live Preview Section
@@ -170,109 +182,261 @@ fun WebhookEditorScreen(
             }
         )
     }
+
+    // Add/Edit Rule Dialog
+    if (showRuleDialog) {
+        currentRule?.let { rule ->
+            EditTriggerRuleDialog(
+                rule = rule,
+                onDismiss = {
+                    viewModel.cancelEditRule()
+                    showRuleDialog = false
+                },
+                onSave = { updatedRule ->
+                    viewModel.updateCurrentRule(updatedRule)
+                    viewModel.saveCurrentRule()
+                    showRuleDialog = false
+                }
+            )
+        }
+    }
+
+    // Delete Rule Confirmation
+    ruleToDelete?.let { rule ->
+        AlertDialog(
+            onDismissRequest = { ruleToDelete = null },
+            title = { Text(stringResource(R.string.delete)) },
+            text = { Text("Delete this trigger rule?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteTriggerRule(rule)
+                        ruleToDelete = null
+                    }
+                ) {
+                    Text(stringResource(R.string.yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { ruleToDelete = null }) {
+                    Text(stringResource(R.string.no))
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun TriggerRulesSection(
-    triggerRule: TriggerRule,
-    onTriggerRuleChange: (TriggerRule) -> Unit
+fun TriggerRulesListSection(
+    triggerRules: List<TriggerRule>,
+    onAddRule: () -> Unit,
+    onEditRule: (TriggerRule) -> Unit,
+    onToggleRule: (TriggerRule) -> Unit,
+    onDeleteRule: (TriggerRule) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = stringResource(R.string.trigger_rules),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            OutlinedTextField(
-                value = triggerRule.packageNamePattern ?: "",
-                onValueChange = {
-                    onTriggerRuleChange(triggerRule.copy(packageNamePattern = it.takeIf { s -> s.isNotBlank() }))
-                },
-                label = { Text(stringResource(R.string.package_filter)) },
-                placeholder = { Text("e.g., com.example") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = triggerRule.contentPattern ?: "",
-                onValueChange = {
-                    onTriggerRuleChange(triggerRule.copy(contentPattern = it.takeIf { s -> s.isNotBlank() }))
-                },
-                label = { Text(stringResource(R.string.content_filter)) },
-                placeholder = { Text(if (triggerRule.useRegex) "e.g., .*urgent.*" else "e.g., urgent") },
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = {
-                    Text(
-                        if (triggerRule.useRegex)
-                            stringResource(R.string.regex_match)
-                        else
-                            stringResource(R.string.simple_text_match)
-                    )
-                }
-            )
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.use_regex),
-                    style = MaterialTheme.typography.bodyMedium
+                    text = stringResource(R.string.trigger_rules),
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Switch(
-                    checked = triggerRule.useRegex,
-                    onCheckedChange = {
-                        onTriggerRuleChange(triggerRule.copy(useRegex = it))
-                    }
-                )
+                TextButton(onClick = onAddRule) {
+                    Text("Add Rule")
+                }
             }
 
-            Text(
-                text = "Priority Range",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = triggerRule.minPriority.toString(),
-                    onValueChange = {
-                        it.toIntOrNull()?.let { priority ->
-                            onTriggerRuleChange(triggerRule.copy(minPriority = priority))
-                        }
-                    },
-                    label = { Text("Min") },
-                    modifier = Modifier.weight(1f)
+            if (triggerRules.isEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "No trigger rules. Add one to filter notifications.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
-                OutlinedTextField(
-                    value = triggerRule.maxPriority.toString(),
-                    onValueChange = {
-                        it.toIntOrNull()?.let { priority ->
-                            onTriggerRuleChange(triggerRule.copy(maxPriority = priority))
-                        }
-                    },
-                    label = { Text("Max") },
-                    modifier = Modifier.weight(1f)
-                )
+            } else {
+                Spacer(modifier = Modifier.height(8.dp))
+                triggerRules.forEach { rule ->
+                    TriggerRuleCard(
+                        rule = rule,
+                        onEdit = { onEditRule(rule) },
+                        onToggle = { onToggleRule(rule) },
+                        onDelete = { onDeleteRule(rule) }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
-
-            Text(
-                text = "Priority range: -2 (MIN) to 2 (MAX)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
+}
+
+@Composable
+fun TriggerRuleCard(
+    rule: TriggerRule,
+    onEdit: () -> Unit,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = if (rule.enabled) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = MaterialTheme.shapes.small
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                if (rule.packageNamePattern != null) {
+                    Text(
+                        text = "Package: ${rule.packageNamePattern}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                if (rule.contentPattern != null) {
+                    Text(
+                        text = "Content: ${rule.contentPattern} ${if (rule.useRegex) "(regex)" else "(text)"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Text(
+                    text = "Priority: ${rule.minPriority} to ${rule.maxPriority}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Edit")
+                }
+                Switch(
+                    checked = rule.enabled,
+                    onCheckedChange = { onToggle() }
+                )
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EditTriggerRuleDialog(
+    rule: TriggerRule,
+    onDismiss: () -> Unit,
+    onSave: (TriggerRule) -> Unit
+) {
+    var editedRule by remember { mutableStateOf(rule) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (rule.id == 0L) "Add Trigger Rule" else "Edit Trigger Rule") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                OutlinedTextField(
+                    value = editedRule.packageNamePattern ?: "",
+                    onValueChange = {
+                        editedRule = editedRule.copy(packageNamePattern = it.takeIf { s -> s.isNotBlank() })
+                    },
+                    label = { Text(stringResource(R.string.package_filter)) },
+                    placeholder = { Text("e.g., com.example") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = editedRule.contentPattern ?: "",
+                    onValueChange = {
+                        editedRule = editedRule.copy(contentPattern = it.takeIf { s -> s.isNotBlank() })
+                    },
+                    label = { Text(stringResource(R.string.content_filter)) },
+                    placeholder = { Text(if (editedRule.useRegex) "e.g., .*urgent.*" else "e.g., urgent") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.use_regex),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Switch(
+                        checked = editedRule.useRegex,
+                        onCheckedChange = { editedRule = editedRule.copy(useRegex = it) }
+                    )
+                }
+
+                Text(
+                    text = "Priority Range",
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = editedRule.minPriority.toString(),
+                        onValueChange = {
+                            it.toIntOrNull()?.let { priority ->
+                                editedRule = editedRule.copy(minPriority = priority)
+                            }
+                        },
+                        label = { Text("Min") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    OutlinedTextField(
+                        value = editedRule.maxPriority.toString(),
+                        onValueChange = {
+                            it.toIntOrNull()?.let { priority ->
+                                editedRule = editedRule.copy(maxPriority = priority)
+                            }
+                        },
+                        label = { Text("Max") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(editedRule) }
+            ) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }
 
 @Composable

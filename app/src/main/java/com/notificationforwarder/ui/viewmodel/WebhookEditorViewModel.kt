@@ -29,17 +29,26 @@ class WebhookEditorViewModel @Inject constructor(
     private val _headers = MutableStateFlow<Map<String, String>>(emptyMap())
     val headers: StateFlow<Map<String, String>> = _headers.asStateFlow()
 
-    private val _triggerRule = MutableStateFlow(TriggerRule(webhookId = 0))
-    val triggerRule: StateFlow<TriggerRule> = _triggerRule.asStateFlow()
+    private val _triggerRules = MutableStateFlow<List<TriggerRule>>(emptyList())
+    val triggerRules: StateFlow<List<TriggerRule>> = _triggerRules.asStateFlow()
+
+    private val _currentRule = MutableStateFlow<TriggerRule?>(null)
+    val currentRule: StateFlow<TriggerRule?> = _currentRule.asStateFlow()
 
     private val _activeNotifications = MutableStateFlow<List<NotificationData>>(emptyList())
     val activeNotifications: StateFlow<List<NotificationData>> = _activeNotifications.asStateFlow()
 
     val matchingNotifications: StateFlow<List<NotificationData>> = combine(
         _activeNotifications,
-        _triggerRule
-    ) { notifications, rule ->
-        notifications.filter { triggerMatcher.matches(it, rule) }
+        _triggerRules
+    ) { notifications, rules ->
+        if (rules.isEmpty()) {
+            emptyList()
+        } else {
+            notifications.filter { notification ->
+                triggerMatcher.matches(notification, rules)
+            }
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -55,9 +64,7 @@ class WebhookEditorViewModel @Inject constructor(
 
                 // Load trigger rules
                 val rules = webhookRepository.getTriggerRulesSync(id)
-                if (rules.isNotEmpty()) {
-                    _triggerRule.value = rules.first()
-                }
+                _triggerRules.value = rules
             }
         }
     }
@@ -74,8 +81,53 @@ class WebhookEditorViewModel @Inject constructor(
         _headers.value = _headers.value - name
     }
 
-    fun updateTriggerRule(rule: TriggerRule) {
-        _triggerRule.value = rule
+    fun addTriggerRule() {
+        _currentRule.value = TriggerRule(webhookId = webhookId ?: 0)
+    }
+
+    fun updateCurrentRule(rule: TriggerRule) {
+        _currentRule.value = rule
+    }
+
+    fun saveCurrentRule() {
+        viewModelScope.launch {
+            _currentRule.value?.let { rule ->
+                if (rule.id == 0L) {
+                    // New rule
+                    webhookRepository.insertTriggerRule(rule.copy(webhookId = webhookId ?: 0))
+                } else {
+                    // Update existing
+                    webhookRepository.updateTriggerRule(rule)
+                }
+                // Reload rules
+                webhookId?.let { id ->
+                    _triggerRules.value = webhookRepository.getTriggerRulesSync(id)
+                }
+                _currentRule.value = null
+            }
+        }
+    }
+
+    fun cancelEditRule() {
+        _currentRule.value = null
+    }
+
+    fun toggleTriggerRule(rule: TriggerRule) {
+        viewModelScope.launch {
+            webhookRepository.updateTriggerRule(rule.copy(enabled = !rule.enabled))
+            webhookId?.let { id ->
+                _triggerRules.value = webhookRepository.getTriggerRulesSync(id)
+            }
+        }
+    }
+
+    fun deleteTriggerRule(rule: TriggerRule) {
+        viewModelScope.launch {
+            webhookRepository.deleteTriggerRule(rule)
+            webhookId?.let { id ->
+                _triggerRules.value = webhookRepository.getTriggerRulesSync(id)
+            }
+        }
     }
 
     fun refreshActiveNotifications() {
@@ -97,20 +149,6 @@ class WebhookEditorViewModel @Inject constructor(
                     webhookId
                 } else {
                     webhookRepository.insertWebhook(webhook)
-                }
-
-                // Save or update trigger rule
-                val rule = _triggerRule.value.copy(webhookId = savedWebhookId)
-                if (webhookId != null) {
-                    // Update existing rule or create new one
-                    val existingRules = webhookRepository.getTriggerRulesSync(webhookId)
-                    if (existingRules.isNotEmpty()) {
-                        webhookRepository.updateTriggerRule(rule.copy(id = existingRules.first().id))
-                    } else {
-                        webhookRepository.insertTriggerRule(rule)
-                    }
-                } else {
-                    webhookRepository.insertTriggerRule(rule)
                 }
 
                 onComplete()
