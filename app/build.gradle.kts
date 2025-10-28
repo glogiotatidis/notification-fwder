@@ -120,7 +120,7 @@ dependencies {
     testImplementation("com.google.truth:truth:1.1.5")
     testImplementation("androidx.room:room-testing:2.6.1")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
-    
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
@@ -130,7 +130,7 @@ dependencies {
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.48.1")
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     kspAndroidTest("com.google.dagger:hilt-compiler:2.48.1")
-    
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

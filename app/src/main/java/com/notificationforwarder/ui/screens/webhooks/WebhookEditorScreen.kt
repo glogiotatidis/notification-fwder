@@ -209,9 +209,9 @@ fun TriggerRulesSection(
                 modifier = Modifier.fillMaxWidth(),
                 supportingText = {
                     Text(
-                        if (triggerRule.useRegex) 
+                        if (triggerRule.useRegex)
                             stringResource(R.string.regex_match)
-                        else 
+                        else
                             stringResource(R.string.simple_text_match)
                     )
                 }

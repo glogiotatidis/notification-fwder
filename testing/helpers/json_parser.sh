@@ -6,7 +6,7 @@
 json_get_value() {
     local json=$1
     local key=$2
-    
+
     echo "$json" | grep -o "\"$key\":[^,}]*" | cut -d':' -f2- | tr -d '"' | tr -d ' '
 }
 
@@ -19,7 +19,7 @@ has_jq() {
 parse_json() {
     local json=$1
     local query=$2
-    
+
     if has_jq; then
         echo "$json" | jq -r "$query"
     else
@@ -33,7 +33,7 @@ create_json() {
     local -n pairs=$1
     local json="{"
     local first=true
-    
+
     for key in "${!pairs[@]}"; do
         if [ "$first" = true ]; then
             first=false
@@ -42,7 +42,7 @@ create_json() {
         fi
         json+="\"$key\":\"${pairs[$key]}\""
     done
-    
+
     json+="}"
     echo "$json"
 }
@@ -50,7 +50,7 @@ create_json() {
 # Pretty print JSON
 pretty_json() {
     local json=$1
-    
+
     if has_jq; then
         echo "$json" | jq '.'
     else
@@ -61,7 +61,7 @@ pretty_json() {
 # Validate JSON
 is_valid_json() {
     local json=$1
-    
+
     if has_jq; then
         echo "$json" | jq '.' > /dev/null 2>&1
         return $?

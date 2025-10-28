@@ -11,7 +11,7 @@ generate_notification() {
     local title=$2
     local text=$3
     local id=$4
-    
+
     # Using adb shell to post notifications
     # Note: This requires a helper app or using Android's test notification system
     adb shell "cmd notification post -t '$title' '$package_name' 'tag_$id' '$text'"
@@ -20,21 +20,21 @@ generate_notification() {
 # Generate multiple test notifications
 generate_test_notifications() {
     echo "Generating test notifications..."
-    
+
     generate_notification "com.test.app1" "Test Title 1" "This is test notification 1" 1
     sleep 1
-    
+
     generate_notification "com.test.app2" "Test Title 2" "This is test notification 2" 2
     sleep 1
-    
+
     generate_notification "com.urgent.app" "URGENT" "This is an urgent notification" 3
     sleep 1
-    
+
     generate_notification "com.test.app1" "Another Test" "Low priority notification" 4
     sleep 1
-    
+
     generate_notification "com.example.messenger" "New Message" "You have a new message from John" 5
-    
+
     echo "Generated 5 test notifications"
 }
 
@@ -42,7 +42,7 @@ generate_test_notifications() {
 generate_priority_notification() {
     local priority=$1  # -2 to 2
     local package="com.test.priority"
-    
+
     # Note: Priority needs to be set through a proper Android app
     # This is a simplified version
     generate_notification "$package" "Priority $priority" "Test notification with priority $priority" "p$priority"

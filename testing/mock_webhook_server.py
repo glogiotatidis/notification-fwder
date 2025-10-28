@@ -31,7 +31,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
         """Handle POST requests"""
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length).decode('utf-8')
-        
+
         # Log request details
         request_data = {
             'timestamp': datetime.now().isoformat(),
@@ -39,16 +39,16 @@ class WebhookHandler(BaseHTTPRequestHandler):
             'headers': dict(self.headers),
             'body': body
         }
-        
+
         # Parse JSON if possible
         try:
             request_data['body_json'] = json.loads(body)
         except json.JSONDecodeError:
             pass
-        
+
         # Store request
         self.received_requests.append(request_data)
-        
+
         # Log to file
         with open(LOG_FILE, 'a') as f:
             f.write('\n' + '='*80 + '\n')
@@ -56,7 +56,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
             f.write('='*80 + '\n')
             f.write(json.dumps(request_data, indent=2))
             f.write('\n')
-        
+
         # Print to console
         print(f"\n{'='*80}")
         print("WEBHOOK RECEIVED")
@@ -64,16 +64,16 @@ class WebhookHandler(BaseHTTPRequestHandler):
         print(f"Path: {self.path}")
         print(f"Headers: {json.dumps(dict(self.headers), indent=2)}")
         print(f"Body: {body[:500]}...")  # First 500 chars
-        
+
         if 'body_json' in request_data:
             print("\nParsed JSON:")
             print(json.dumps(request_data['body_json'], indent=2))
-        
+
         # Send response
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
-        
+
         response = {
             'status': 'success',
             'message': 'Webhook received',
@@ -87,7 +87,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            
+
             response = {
                 'status': 'running',
                 'port': PORT,
@@ -95,17 +95,17 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 'uptime': 'N/A'
             }
             self.wfile.write(json.dumps(response).encode())
-        
+
         elif self.path == '/requests':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            
+
             self.wfile.write(json.dumps({
                 'count': len(self.received_requests),
                 'requests': self.received_requests
             }, indent=2).encode())
-        
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -114,7 +114,7 @@ def run_server():
     """Start the mock webhook server"""
     server_address = ('', PORT)
     httpd = HTTPServer(server_address, WebhookHandler)
-    
+
     print(f"""
 ╔════════════════════════════════════════════════════════════╗
 ║         Mock Webhook Server for Notification Forwarder     ║
@@ -133,7 +133,7 @@ To test from Android device, use server's IP address:
 
 Press Ctrl+C to stop the server
 """)
-    
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

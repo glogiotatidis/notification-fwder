@@ -42,12 +42,12 @@ declare -a TEST_RESULTS
 run_test() {
     local test_script=$1
     local test_name=$(basename "$test_script" .sh)
-    
+
     echo -n "Running $test_name... "
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    
+
     local start_time=$(date +%s)
-    
+
     if [ -x "$test_script" ]; then
         if "$test_script" >> "$LOG_FILE" 2>&1; then
             local end_time=$(date +%s)

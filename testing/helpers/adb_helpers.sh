@@ -74,7 +74,7 @@ send_test_notification() {
     local title=$1
     local text=$2
     local package=${3:-"com.test.app"}
-    
+
     # Use adb shell to trigger a notification via test app or system notification
     # This is a simplified version - in reality you'd need a test app
     adb shell "cmd notification post -t '$title' '$package' 'test_tag' '$text'"
@@ -101,7 +101,7 @@ wait_for_condition() {
     local condition=$1
     local timeout=${2:-30}
     local count=0
-    
+
     while [ $count -lt $timeout ]; do
         if eval "$condition"; then
             return 0
@@ -109,7 +109,7 @@ wait_for_condition() {
         sleep 1
         count=$((count + 1))
     done
-    
+
     return 1
 }
 
