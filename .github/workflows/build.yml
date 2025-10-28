@@ -92,9 +92,11 @@ jobs:
           fi
 
       - name: Decode keystore
-        if: steps.build-type.outputs.type == 'release' && secrets.KEYSTORE_FILE_BASE64 != ''
+        if: steps.build-type.outputs.type == 'release'
         run: |
-          echo "${{ secrets.KEYSTORE_FILE_BASE64 }}" | base64 -d > release.keystore
+          if [ -n "${{ secrets.KEYSTORE_FILE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_FILE_BASE64 }}" | base64 -d > release.keystore
+          fi
 
       - name: Build APK
         env:
@@ -127,7 +129,7 @@ jobs:
       - name: Rename APK
         run: |
           VERSION="${{ steps.version.outputs.name }}"
-          
+
           if [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
             mv app/build/outputs/apk/release/app-release.apk app-${VERSION}.apk
             echo "Created: app-${VERSION}.apk"
