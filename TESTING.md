@@ -137,9 +137,9 @@ gh run download <run-id>
 
 ## Current Test Status
 
-**Unit Tests:** ✅ All 39 tests passing  
-**Build:** ✅ APK builds successfully (8.7 MB)  
-**CI/CD:** ✅ Nightly workflow passing  
+**Unit Tests:** ✅ All 39 tests passing
+**Build:** ✅ APK builds successfully (8.7 MB)
+**CI/CD:** ✅ Nightly workflow passing
 **System Tests:** ⏳ Ready to run on device
 
 ## Next Steps

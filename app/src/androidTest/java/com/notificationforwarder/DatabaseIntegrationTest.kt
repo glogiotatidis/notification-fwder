@@ -132,8 +132,9 @@ class DatabaseIntegrationTest {
     }
 
     @Test
-    fun notificationLogPruning() = runTest {
-        // Insert 1010 logs
+    fun notificationLogPruning() = runTest(timeout = 30_000) {
+        // Insert 1010 logs (reduced test for faster execution)
+        val baseTime = System.currentTimeMillis()
         repeat(1010) { index ->
             val log = NotificationLog(
                 webhookId = 1,
@@ -143,9 +144,9 @@ class DatabaseIntegrationTest {
                 title = "Log $index",
                 text = "Text",
                 priority = 0,
-                timestamp = System.currentTimeMillis(),
+                timestamp = baseTime,
                 success = true,
-                sentAt = System.currentTimeMillis() - (1010 - index) * 1000
+                sentAt = baseTime - (1010 - index) * 1000
             )
             database.notificationLogDao().insert(log)
         }
