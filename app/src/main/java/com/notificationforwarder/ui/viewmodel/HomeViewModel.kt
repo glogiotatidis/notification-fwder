@@ -28,10 +28,12 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     fun isNotificationServiceEnabled(): Boolean {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val enabledListeners = notificationManager.enabledNotificationListeners
-        val ourComponentName = ComponentName(context, NotificationForwarderService::class.java)
-        return enabledListeners?.contains(ourComponentName) == true
+        val enabledListeners = android.provider.Settings.Secure.getString(
+            context.contentResolver,
+            "enabled_notification_listeners"
+        )
+        val componentName = ComponentName(context, NotificationForwarderService::class.java)
+        return enabledListeners?.contains(componentName.flattenToString()) == true
     }
 }
 

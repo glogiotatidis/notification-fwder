@@ -39,13 +39,18 @@ class NotificationForwarderService : NotificationListenerService() {
         private const val TAG = "NotificationForwarder"
         private const val CHANNEL_ID = "notification_forwarder_channel"
         private const val NOTIFICATION_ID = 1
-
-        @Volatile
-        var activeNotifications = mutableListOf<NotificationData>()
-            private set
-
+        
+        private val _activeNotifications = mutableListOf<NotificationData>()
+        
+        @Synchronized
         fun getActiveNotifications(): List<NotificationData> {
-            return activeNotifications.toList()
+            return _activeNotifications.toList()
+        }
+        
+        @Synchronized
+        fun updateActiveNotifications(notifications: List<NotificationData>) {
+            _activeNotifications.clear()
+            _activeNotifications.addAll(notifications)
         }
     }
 
@@ -130,7 +135,7 @@ class NotificationForwarderService : NotificationListenerService() {
             val bitmap = if (icon != null) {
                 // Convert Icon to Bitmap
                 val drawable = icon.loadDrawable(this)
-                drawableToBitmap(drawable)
+                drawable?.let { drawableToBitmap(it) }
             } else {
                 // Fallback to app icon
                 val appIcon = packageManager.getApplicationIcon(sbn.packageName)
@@ -175,15 +180,14 @@ class NotificationForwarderService : NotificationListenerService() {
 
     private fun updateActiveNotificationsList() {
         try {
-            val active = activeNotifications ?: return
-            active.clear()
-            active.addAll(
-                (this.activeNotifications ?: emptyArray()).mapNotNull { sbn ->
-                    if (sbn.packageName != packageName) {
-                        extractNotificationData(sbn)
-                    } else null
-                }
-            )
+            val currentNotifications = this.activeNotifications ?: emptyArray()
+            val notificationDataList = currentNotifications.mapNotNull { sbn ->
+                if (sbn.packageName != packageName) {
+                    extractNotificationData(sbn)
+                } else null
+            }
+            
+            updateActiveNotifications(notificationDataList)
         } catch (e: Exception) {
             Log.e(TAG, "Error updating active notifications: ${e.message}", e)
         }
