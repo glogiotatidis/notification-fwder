@@ -32,6 +32,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Only run this workflow when triggered by tags, releases, or manual dispatch
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
