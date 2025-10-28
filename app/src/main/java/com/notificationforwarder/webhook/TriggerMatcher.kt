@@ -6,20 +6,20 @@ import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
 class TriggerMatcher {
-    
+
     fun matches(notification: NotificationData, rule: TriggerRule): Boolean {
         if (!rule.enabled) {
             return false
         }
 
-        // Check package name pattern
+        // Check package name pattern (always simple text match)
         if (rule.packageNamePattern != null && rule.packageNamePattern.isNotBlank()) {
             if (!notification.packageName.contains(rule.packageNamePattern, ignoreCase = true)) {
                 return false
             }
         }
 
-        // Check content pattern (regex)
+        // Check content pattern (regex or simple text match)
         if (rule.contentPattern != null && rule.contentPattern.isNotBlank()) {
             val content = buildString {
                 notification.title?.let { append(it).append(" ") }
@@ -28,13 +28,21 @@ class TriggerMatcher {
                 notification.bigText?.let { append(it) }
             }
 
-            try {
-                val pattern = Pattern.compile(rule.contentPattern, Pattern.CASE_INSENSITIVE)
-                if (!pattern.matcher(content).find()) {
+            val matchFound = if (rule.useRegex) {
+                // Regex matching
+                try {
+                    val pattern = Pattern.compile(rule.contentPattern, Pattern.CASE_INSENSITIVE)
+                    pattern.matcher(content).find()
+                } catch (e: PatternSyntaxException) {
+                    // Invalid regex, skip this rule
                     return false
                 }
-            } catch (e: PatternSyntaxException) {
-                // Invalid regex, skip this rule
+            } else {
+                // Simple text matching (case-insensitive contains)
+                content.contains(rule.contentPattern, ignoreCase = true)
+            }
+
+            if (!matchFound) {
                 return false
             }
         }

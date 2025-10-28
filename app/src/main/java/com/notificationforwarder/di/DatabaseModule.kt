@@ -25,6 +25,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "notification_forwarder_db"
         )
+            .addMigrations(com.notificationforwarder.data.migrations.DatabaseMigrations.MIGRATION_1_2)
             .fallbackToDestructiveMigration()
             .build()
     }

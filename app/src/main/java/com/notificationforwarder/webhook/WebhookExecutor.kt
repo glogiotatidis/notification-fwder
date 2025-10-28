@@ -33,12 +33,12 @@ class WebhookExecutor @Inject constructor(
             try {
                 // Get all enabled webhooks
                 val webhooks = webhookRepository.getEnabledWebhooks()
-                
+
                 webhooks.collect { webhookList ->
                     webhookList.forEach { webhook ->
                         // Get trigger rules for this webhook
                         val triggerRules = webhookRepository.getTriggerRulesSync(webhook.id)
-                        
+
                         // Check if notification matches any trigger rule
                         if (triggerMatcher.matches(notification, triggerRules)) {
                             Log.d(TAG, "Notification matches webhook ${webhook.id}, sending...")
@@ -89,22 +89,22 @@ class WebhookExecutor @Inject constructor(
 
         while (attempt < MAX_RETRIES && !success) {
             attempt++
-            
+
             try {
                 val requestBody = jsonPayload.toRequestBody("application/json".toMediaType())
                 val response = webhookApi.sendWebhook(url, headers, requestBody)
-                
+
                 lastStatusCode = response.code()
                 responseBodyText = response.body()?.string()?.take(500)
 
                 success = response.isSuccessful
-                
+
                 if (success) {
                     Log.d(TAG, "Webhook sent successfully to $url (status: $lastStatusCode)")
                 } else {
                     lastError = "HTTP ${response.code()}: ${response.message()}"
                     Log.w(TAG, "Webhook failed: $lastError")
-                    
+
                     // Don't retry on client errors (4xx)
                     if (response.code() in 400..499) {
                         break
@@ -113,7 +113,7 @@ class WebhookExecutor @Inject constructor(
             } catch (e: Exception) {
                 lastError = e.message ?: "Unknown error"
                 Log.e(TAG, "Webhook error (attempt $attempt/$MAX_RETRIES): $lastError", e)
-                
+
                 // Wait before retry
                 if (attempt < MAX_RETRIES) {
                     kotlinx.coroutines.delay(1000L * attempt)

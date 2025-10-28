@@ -34,12 +34,12 @@ class NotificationForwarderService : NotificationListenerService() {
     lateinit var webhookExecutor: WebhookExecutor
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    
+
     companion object {
         private const val TAG = "NotificationForwarder"
         private const val CHANNEL_ID = "notification_forwarder_channel"
         private const val NOTIFICATION_ID = 1
-        
+
         @Volatile
         var activeNotifications = mutableListOf<NotificationData>()
             private set
@@ -66,7 +66,7 @@ class NotificationForwarderService : NotificationListenerService() {
         super.onNotificationPosted(sbn)
         sbn?.let {
             Log.d(TAG, "Notification posted from ${it.packageName}")
-            
+
             // Skip our own notifications
             if (it.packageName == packageName) {
                 return
@@ -74,7 +74,7 @@ class NotificationForwarderService : NotificationListenerService() {
 
             val notificationData = extractNotificationData(it)
             updateActiveNotificationsList()
-            
+
             // Process webhook triggers
             serviceScope.launch {
                 webhookExecutor.processNotification(notificationData)

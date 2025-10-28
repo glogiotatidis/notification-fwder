@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         setContent {
             NotificationForwarderTheme {
                 Surface(
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    
+
     fun openNotificationSettings() {
         startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
     }

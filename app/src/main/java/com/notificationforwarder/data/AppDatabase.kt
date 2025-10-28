@@ -17,7 +17,7 @@ import com.notificationforwarder.data.entity.WebhookConfig
         TriggerRule::class,
         NotificationLog::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(MapTypeConverter::class)

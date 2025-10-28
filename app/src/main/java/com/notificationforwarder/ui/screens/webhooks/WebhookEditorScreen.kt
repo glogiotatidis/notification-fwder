@@ -205,9 +205,34 @@ fun TriggerRulesSection(
                     onTriggerRuleChange(triggerRule.copy(contentPattern = it.takeIf { s -> s.isNotBlank() }))
                 },
                 label = { Text(stringResource(R.string.content_filter)) },
-                placeholder = { Text("e.g., .*urgent.*") },
-                modifier = Modifier.fillMaxWidth()
+                placeholder = { Text(if (triggerRule.useRegex) "e.g., .*urgent.*" else "e.g., urgent") },
+                modifier = Modifier.fillMaxWidth(),
+                supportingText = {
+                    Text(
+                        if (triggerRule.useRegex) 
+                            stringResource(R.string.regex_match)
+                        else 
+                            stringResource(R.string.simple_text_match)
+                    )
+                }
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.use_regex),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Switch(
+                    checked = triggerRule.useRegex,
+                    onCheckedChange = {
+                        onTriggerRuleChange(triggerRule.copy(useRegex = it))
+                    }
+                )
+            }
 
             Text(
                 text = "Priority Range",

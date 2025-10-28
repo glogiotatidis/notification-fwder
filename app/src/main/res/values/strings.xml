@@ -5,12 +5,12 @@
     <string name="notification_service_channel_name">Notification Forwarder</string>
     <string name="notification_service_channel_desc">Monitors and forwards notifications</string>
     <string name="service_running">Service is running</string>
-    
+
     <!-- Navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_webhooks">Webhooks</string>
     <string name="nav_history">History</string>
-    
+
     <!-- Home Screen -->
     <string name="service_status">Service Status</string>
     <string name="service_enabled">Enabled</string>
@@ -18,7 +18,7 @@
     <string name="enable_service">Enable Notification Access</string>
     <string name="total_webhooks">Total Webhooks</string>
     <string name="notifications_processed">Notifications Processed</string>
-    
+
     <!-- Webhooks Screen -->
     <string name="add_webhook">Add Webhook</string>
     <string name="edit_webhook">Edit Webhook</string>
@@ -30,11 +30,14 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
-    
+
     <!-- Trigger Builder -->
     <string name="trigger_rules">Trigger Rules</string>
     <string name="package_filter">Package Filter</string>
-    <string name="content_filter">Content Filter (Regex)</string>
+    <string name="content_filter">Content Filter</string>
+    <string name="use_regex">Use Regex Matching</string>
+    <string name="simple_text_match">Simple text matching (contains)</string>
+    <string name="regex_match">Regular expression matching</string>
     <string name="priority_filter">Priority Filter</string>
     <string name="any_priority">Any Priority</string>
     <string name="min_priority">Minimum Priority</string>
@@ -42,7 +45,7 @@
     <string name="live_preview">Live Preview</string>
     <string name="matching_notifications">Matching Notifications</string>
     <string name="no_matching_notifications">No matching notifications</string>
-    
+
     <!-- History Screen -->
     <string name="filter_history">Filter</string>
     <string name="clear_history">Clear History</string>
@@ -50,7 +53,7 @@
     <string name="status_failed">Failed</string>
     <string name="http_code">HTTP %d</string>
     <string name="no_history">No webhook history</string>
-    
+
     <!-- Common -->
     <string name="error_invalid_url">Invalid URL</string>
     <string name="error_empty_field">This field cannot be empty</string>

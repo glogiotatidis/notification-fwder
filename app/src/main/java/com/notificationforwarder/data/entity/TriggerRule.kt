@@ -22,7 +22,8 @@ data class TriggerRule(
     val id: Long = 0,
     val webhookId: Long,
     val packageNamePattern: String? = null, // null = match all
-    val contentPattern: String? = null, // regex pattern for notification content
+    val contentPattern: String? = null, // pattern for notification content
+    val useRegex: Boolean = false, // if true, contentPattern is regex; if false, simple text match
     val minPriority: Int = -2, // PRIORITY_MIN
     val maxPriority: Int = 2, // PRIORITY_MAX
     val enabled: Boolean = true
