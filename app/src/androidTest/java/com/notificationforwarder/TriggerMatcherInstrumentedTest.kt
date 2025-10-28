@@ -38,6 +38,7 @@ class TriggerMatcherInstrumentedTest {
             webhookId = 1,
             packageNamePattern = "whatsapp",
             contentPattern = ".*(urgent|important|asap).*",
+            useRegex = true,
             minPriority = 0,
             maxPriority = 2,
             enabled = true
@@ -93,6 +94,7 @@ class TriggerMatcherInstrumentedTest {
             webhookId = 1,
             packageNamePattern = "banking",
             contentPattern = ".*(security|alert|fraud).*",
+            useRegex = true,
             minPriority = 1,
             maxPriority = 2,
             enabled = true

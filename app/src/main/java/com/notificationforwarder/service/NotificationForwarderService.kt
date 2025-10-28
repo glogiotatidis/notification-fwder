@@ -39,14 +39,14 @@ class NotificationForwarderService : NotificationListenerService() {
         private const val TAG = "NotificationForwarder"
         private const val CHANNEL_ID = "notification_forwarder_channel"
         private const val NOTIFICATION_ID = 1
-        
+
         private val _activeNotifications = mutableListOf<NotificationData>()
-        
+
         @Synchronized
         fun getActiveNotifications(): List<NotificationData> {
             return _activeNotifications.toList()
         }
-        
+
         @Synchronized
         fun updateActiveNotifications(notifications: List<NotificationData>) {
             _activeNotifications.clear()
@@ -186,7 +186,7 @@ class NotificationForwarderService : NotificationListenerService() {
                     extractNotificationData(sbn)
                 } else null
             }
-            
+
             updateActiveNotifications(notificationDataList)
         } catch (e: Exception) {
             Log.e(TAG, "Error updating active notifications: ${e.message}", e)
