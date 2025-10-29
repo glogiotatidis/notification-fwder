@@ -53,7 +53,7 @@ jobs:
       - name: Run unit tests
         if: github.event.inputs.skip_tests != 'true'
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          if [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
             ./gradlew testReleaseUnitTest
           else
             ./gradlew testDebugUnitTest
@@ -83,7 +83,7 @@ jobs:
         id: build-type
         run: |
           # Release builds: tags or manual release selection
-          if [[ "${{ github.ref }}" == refs/tags/* ]] || [[ "${{ github.event.inputs.build_type }}" == "release" ]]; then
+          if [[ "${{ github.ref }}" == "refs/tags/"* ]] || [[ "${{ github.event.inputs.build_type }}" == "release" ]]; then
             echo "type=release" >> $GITHUB_OUTPUT
             echo "Building RELEASE APK"
           else
@@ -118,7 +118,7 @@ jobs:
         run: |
           if [ -n "${{ github.event.inputs.version_name }}" ]; then
             VERSION="${{ github.event.inputs.version_name }}"
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          elif [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           else
             VERSION="nightly-$(date +%Y%m%d-%H%M%S)"
